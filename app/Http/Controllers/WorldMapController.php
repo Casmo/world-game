@@ -26,11 +26,15 @@ class WorldMapController extends Controller
 
         $center = $h3->latLngToCell($lat, $lng, config('h3.resolution'));
 
-        foreach ($h3->disk($center, config('h3.view_ring')) as $cell) {
+        $cells = $h3->disk($center, config('h3.view_ring'));
+
+        foreach ($cells as $cell) {
             $materialize->handle($cell);
         }
 
-        $tiles = Tile::whereIn('h3_index', $h3->disk($center, config('h3.view_ring')))
+        $ownTeamId = $request->user()?->current_team_id;
+
+        $tiles = Tile::whereIn('h3_index', $cells)
             ->get()
             ->map(fn (Tile $tile) => [
                 'h3_index' => $tile->h3_index,
@@ -39,6 +43,9 @@ class WorldMapController extends Controller
                 'base_resources' => $tile->base_resources,
                 'status' => $tile->resolution_status->value,
                 'center' => $tile->center(),
+                'team_id' => $tile->team_id,
+                'is_owned' => $tile->isOwned(),
+                'is_own_team' => $ownTeamId !== null && $tile->team_id === $ownTeamId,
             ])
             ->values();
 

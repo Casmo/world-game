@@ -44,4 +44,16 @@ return [
 
     'view_ring' => (int) env('WORLD_MAP_RING', 2),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Spawn Search
+    |--------------------------------------------------------------------------
+    |
+    | How many rings out from the spawn centre to search for an unowned Tile
+    | when a new Team founds and claims its starting Tile.
+    |
+    */
+
+    'spawn_ring' => (int) env('WORLD_SPAWN_RING', 8),
+
 ];

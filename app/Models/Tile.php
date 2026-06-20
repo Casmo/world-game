@@ -5,8 +5,10 @@ namespace App\Models;
 use App\Enums\TileResolutionStatus;
 use App\Support\H3;
 use Database\Factories\TileFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Tile extends Model
 {
@@ -27,6 +29,29 @@ class Tile extends Model
             'base_resources' => 'array',
             'resolution_status' => TileResolutionStatus::class,
         ];
+    }
+
+    /**
+     * The Team that owns this Tile, if any.
+     *
+     * @return BelongsTo<Team, $this>
+     */
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
+
+    /**
+     * @param  Builder<Tile>  $query
+     */
+    public function scopeUnowned(Builder $query): void
+    {
+        $query->whereNull('team_id');
+    }
+
+    public function isOwned(): bool
+    {
+        return $this->team_id !== null;
     }
 
     public function isResolved(): bool

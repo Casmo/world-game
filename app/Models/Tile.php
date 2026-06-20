@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tile extends Model
 {
@@ -39,6 +40,14 @@ class Tile extends Model
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
+    }
+
+    /**
+     * @return HasMany<Building, $this>
+     */
+    public function buildings(): HasMany
+    {
+        return $this->hasMany(Building::class, 'tile_id', 'h3_index');
     }
 
     /**

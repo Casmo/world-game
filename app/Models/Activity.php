@@ -77,6 +77,7 @@ class Activity extends Model
 
         match ($this->type) {
             ActivityType::Sleep => $this->user->restoreEnergyToFull(),
+            ActivityType::Construct => $this->target?->addConstructionWork(Building::WORK_PER_SHIFT),
         };
 
         $this->forceFill([

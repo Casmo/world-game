@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\H3;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(H3::class, fn () => new H3(config('h3.lib_path')));
     }
 
     /**

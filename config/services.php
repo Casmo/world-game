@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    // Third-party geographic/land-cover API used to resolve Tile biomes (ADR-0008).
+    'geo' => [
+        'url' => env('GEO_API_URL', 'https://geo.example.test/biome'),
+    ],
+
 ];

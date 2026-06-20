@@ -16,4 +16,32 @@ return [
 
     'lib_path' => env('H3_LIB_PATH', '/opt/homebrew/lib/libh3.dylib'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Tile Resolution
+    |--------------------------------------------------------------------------
+    |
+    | The H3 resolution used for world Tiles (~25–50 km cells per ADR-0001).
+    |
+    */
+
+    'resolution' => (int) env('H3_RESOLUTION', 7),
+
+    /*
+    |--------------------------------------------------------------------------
+    | World-map View
+    |--------------------------------------------------------------------------
+    |
+    | The default centre of the world-map view and how many rings of Tiles to
+    | reveal around it.
+    |
+    */
+
+    'default_center' => [
+        'lat' => (float) env('WORLD_MAP_LAT', 52.3676),
+        'lng' => (float) env('WORLD_MAP_LNG', 4.9041),
+    ],
+
+    'view_ring' => (int) env('WORLD_MAP_RING', 2),
+
 ];

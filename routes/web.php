@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\BuildingConstructionController;
+use App\Http\Controllers\BuildingController;
+use App\Http\Controllers\CityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\WorldMapController;
@@ -16,6 +19,10 @@ Route::prefix('{current_team}')
 
 Route::middleware(['auth'])->group(function () {
     Route::get('world-map', WorldMapController::class)->name('world-map');
+
+    Route::get('tiles/{tile}/city', CityController::class)->name('city.show');
+    Route::post('buildings', [BuildingController::class, 'store'])->name('buildings.store');
+    Route::post('buildings/{building}/construct', BuildingConstructionController::class)->name('buildings.construct');
 
     Route::get('invitations/{invitation}/accept', [TeamInvitationController::class, 'accept'])->name('invitations.accept');
     Route::delete('invitations/{invitation}', [TeamInvitationController::class, 'decline'])->name('invitations.decline');

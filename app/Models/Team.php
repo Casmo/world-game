@@ -86,6 +86,16 @@ class Team extends Model
     }
 
     /**
+     * The Tiles this Team owns (ADR-0002).
+     *
+     * @return HasMany<Tile, $this>
+     */
+    public function tiles(): HasMany
+    {
+        return $this->hasMany(Tile::class);
+    }
+
+    /**
      * Get all invitations for this team.
      *
      * @return HasMany<TeamInvitation, $this>

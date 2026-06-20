@@ -51,6 +51,9 @@ test('map props expose each Tile’s biome and terrain so it can be inspected', 
                 ->has('base_resources')
                 ->has('status')
                 ->has('center')
+                ->has('team_id')
+                ->has('is_owned')
+                ->has('is_own_team')
             )
         );
 });
@@ -67,16 +70,21 @@ test('revealing the map twice does not recreate existing Tiles', function () {
     expect(Tile::count())->toBe($countAfterFirst);
 });
 
-test('materializing a Tile creates it once and dispatches resolution once', function () {
+test('materializing a Tile creates the row once and never re-dispatches once resolved', function () {
     Queue::fake();
     $action = app(MaterializeTile::class);
     $h3 = app(H3::class)->latLngToCell(52.3676, 4.9041, config('h3.resolution'));
 
-    $action->handle($h3);
-    $action->handle($h3); // second reveal is a no-op
-
+    $action->handle($h3); // creates a pending Tile and dispatches resolution
     expect(Tile::where('h3_index', $h3)->count())->toBe(1);
     Queue::assertPushed(ResolveTileBiome::class, 1);
+
+    // Once resolved, revealing it again creates nothing and dispatches nothing.
+    Tile::find($h3)->update(['resolution_status' => TileResolutionStatus::Resolved]);
+    $action->handle($h3);
+
+    expect(Tile::where('h3_index', $h3)->count())->toBe(1);
+    Queue::assertPushed(ResolveTileBiome::class, 1); // still just the first
 });
 
 test('the resolve job fetches the biome from the geo API and caches it', function () {

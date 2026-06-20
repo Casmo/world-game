@@ -8,7 +8,20 @@ type Tile = {
     base_resources: Record<string, unknown> | null;
     status: 'pending' | 'resolved';
     center: [number, number];
+    team_id: number | null;
+    is_owned: boolean;
+    is_own_team: boolean;
 };
+
+function tileBorderClass(tile: Tile): string {
+    if (tile.is_own_team) {
+        return 'border-emerald-500';
+    }
+    if (tile.is_owned) {
+        return 'border-rose-500';
+    }
+    return 'border-sidebar-border/70 hover:border-neutral-400 dark:border-sidebar-border';
+}
 
 type Props = {
     center: { h3_index: string; lat: number; lng: number };
@@ -36,9 +49,10 @@ export default function WorldMap({ center, tiles }: Props) {
                             key={tile.h3_index}
                             type="button"
                             onClick={() => setSelected(tile)}
-                            className="flex aspect-square flex-col items-center justify-center rounded-xl border border-sidebar-border/70 p-2 text-center transition hover:border-neutral-400 dark:border-sidebar-border"
+                            className={`flex aspect-square flex-col items-center justify-center rounded-xl border-2 p-2 text-center transition ${tileBorderClass(tile)}`}
                             data-h3={tile.h3_index}
                             data-status={tile.status}
+                            data-owned={tile.is_owned}
                         >
                             {tile.status === 'pending' ? (
                                 <span className="animate-pulse text-xs text-neutral-400">

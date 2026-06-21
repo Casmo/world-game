@@ -28,6 +28,7 @@ class H3
             H3Error cellToLatLng(H3Index h3, LatLng *g);
             H3Error maxGridDiskSize(int k, int64_t *out);
             H3Error gridDisk(H3Index origin, int k, H3Index *out);
+            H3Error gridDistance(H3Index origin, H3Index h3, int64_t *distance);
             int isValidCell(H3Index h);
         CDEF, $libPath);
     }
@@ -92,6 +93,17 @@ class H3
         return array_values(
             array_filter($this->disk($cell, 1), fn (string $c) => $c !== $cell)
         );
+    }
+
+    /**
+     * The grid distance (number of rings) between two cells.
+     */
+    public function gridDistance(string $from, string $to): int
+    {
+        $distance = $this->ffi->new('int64_t');
+        $this->ffi->gridDistance($this->toIndex($from), $this->toIndex($to), FFI::addr($distance));
+
+        return (int) $distance->cdata;
     }
 
     public function isValidCell(string $cell): bool

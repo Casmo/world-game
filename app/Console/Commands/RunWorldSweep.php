@@ -2,8 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\War\ResolveAttack;
+use App\Enums\AttackStatus;
 use App\Enums\UnitStatus;
 use App\Models\Activity;
+use App\Models\Attack;
 use App\Models\Team;
 use App\Models\Unit;
 use Illuminate\Console\Attributes\Description;
@@ -27,10 +30,34 @@ class RunWorldSweep extends Command
         $completions = $this->completeDueActivities();
         $activated = $this->activateTrainedUnits();
         $this->chargeDueMaintenance();
+        $this->resolveArrivedAttacks();
 
         $this->info("Swept {$completions} completion(s), activated {$activated} unit(s).");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Resolve attacks that have arrived — battles for marching forces, and
+     * homecomings for returning survivors.
+     */
+    private function resolveArrivedAttacks(): void
+    {
+        $resolver = app(ResolveAttack::class);
+
+        foreach (Attack::arrived(AttackStatus::Marching)->pluck('id') as $id) {
+            $attack = Attack::find($id);
+            if ($attack !== null) {
+                $resolver->resolveArrival($attack);
+            }
+        }
+
+        foreach (Attack::arrived(AttackStatus::Returning)->pluck('id') as $id) {
+            $attack = Attack::find($id);
+            if ($attack !== null) {
+                $resolver->resolveReturn($attack);
+            }
+        }
     }
 
     /**

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttackController;
 use App\Http\Controllers\BuildingConstructionController;
 use App\Http\Controllers\BuildingController;
 use App\Http\Controllers\BuildingWorkController;
@@ -39,6 +40,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('units', [UnitController::class, 'index'])->name('units');
     Route::post('units', [UnitController::class, 'store'])->name('units.store');
     Route::delete('units', [UnitController::class, 'destroy'])->name('units.destroy');
+    Route::post('attacks', [AttackController::class, 'store'])->name('attacks.store');
 
     Route::get('tiles/{tile}/city', CityController::class)->name('city.show');
     Route::post('buildings', [BuildingController::class, 'store'])->name('buildings.store');

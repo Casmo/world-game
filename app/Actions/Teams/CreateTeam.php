@@ -3,6 +3,7 @@
 namespace App\Actions\Teams;
 
 use App\Actions\Tiles\ClaimStartingTile;
+use App\Enums\BuildingType;
 use App\Enums\TeamRole;
 use App\Models\Team;
 use App\Models\User;
@@ -32,6 +33,11 @@ class CreateTeam
             ]);
 
             $user->switchTeam($team);
+
+            // Unlock the default tech-tree set so the Team can build from day one (ADR-0003).
+            foreach (config('techtree.default_unlocked') as $type) {
+                $team->unlockBuilding(BuildingType::from($type));
+            }
 
             // Founding a Team spawns it on an unowned starting Tile (ADR-0002).
             // Joining an existing Team happens via invitations, not here, so it

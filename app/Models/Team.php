@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\GeneratesUniqueTeamSlugs;
+use App\Enums\BuildingType;
 use App\Enums\ResourceType;
 use App\Enums\TeamRole;
 use Database\Factories\TeamFactory;
@@ -123,6 +124,32 @@ class Team extends Model
     public function resourceTotal(ResourceType $type): int
     {
         return (int) $this->resources()->where('type', $type)->value('amount');
+    }
+
+    /**
+     * The Building types this Team has unlocked via the tech tree (ADR-0003).
+     *
+     * @return HasMany<TeamUnlockedBuilding, $this>
+     */
+    public function unlockedBuildings(): HasMany
+    {
+        return $this->hasMany(TeamUnlockedBuilding::class);
+    }
+
+    /**
+     * Whether this Team may place the given Building type yet.
+     */
+    public function hasUnlocked(BuildingType $type): bool
+    {
+        return $this->unlockedBuildings()->where('building_type', $type)->exists();
+    }
+
+    /**
+     * Unlock a Building type for this Team (idempotent).
+     */
+    public function unlockBuilding(BuildingType $type): void
+    {
+        $this->unlockedBuildings()->firstOrCreate(['building_type' => $type]);
     }
 
     /**

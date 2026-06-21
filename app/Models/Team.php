@@ -127,6 +127,41 @@ class Team extends Model
     }
 
     /**
+     * Remove from a Resource total only if enough is in stock. Returns whether
+     * the removal happened — the conditional decrement is a single atomic
+     * statement, so a stockpile can never go negative under concurrency
+     * (ADR-0010).
+     */
+    public function removeResource(ResourceType $type, int $amount): bool
+    {
+        return $this->resources()
+            ->where('type', $type)
+            ->where('amount', '>=', $amount)
+            ->decrement('amount', $amount) > 0;
+    }
+
+    /**
+     * Credit the treasury (atomic increment).
+     */
+    public function depositTreasury(int $amount): void
+    {
+        $this->newQuery()->whereKey($this->getKey())->increment('treasury', $amount);
+    }
+
+    /**
+     * Debit the treasury only if it can afford it. Returns whether the debit
+     * happened — the conditional decrement is a single atomic statement, so the
+     * treasury can never go negative under concurrency (ADR-0010).
+     */
+    public function withdrawTreasury(int $amount): bool
+    {
+        return $this->newQuery()
+            ->whereKey($this->getKey())
+            ->where('treasury', '>=', $amount)
+            ->decrement('treasury', $amount) > 0;
+    }
+
+    /**
      * The Building types this Team has unlocked via the tech tree (ADR-0003).
      *
      * @return HasMany<TeamUnlockedBuilding, $this>

@@ -5,6 +5,7 @@ use App\Http\Controllers\BuildingController;
 use App\Http\Controllers\BuildingWorkController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MarketController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\TechTreeController;
 use App\Http\Controllers\WalletController;
@@ -24,6 +25,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('world-map', WorldMapController::class)->name('world-map');
     Route::get('wallet', WalletController::class)->name('wallet');
     Route::get('tech-tree', TechTreeController::class)->name('tech-tree');
+
+    Route::get('market', [MarketController::class, 'index'])->name('market');
+    Route::post('market/sell', [MarketController::class, 'sell'])->name('market.sell');
+    Route::post('market/buy', [MarketController::class, 'buy'])->name('market.buy');
 
     Route::get('tiles/{tile}/city', CityController::class)->name('city.show');
     Route::post('buildings', [BuildingController::class, 'store'])->name('buildings.store');

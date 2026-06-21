@@ -3,14 +3,16 @@
 namespace App\Enums;
 
 /**
- * The starter catalogue of placeable Buildings. (Tech-tree gating arrives in a
- * later slice; for now every type is available.)
+ * The starter catalogue of placeable Buildings. Most are *production* Buildings
+ * (they yield a Resource when worked); a *service* Building like the Bar yields
+ * no sellable goods and exists to serve the community (ADR-0006).
  */
 enum BuildingType: string
 {
     case Farm = 'farm';
     case LumberCamp = 'lumber_camp';
     case Quarry = 'quarry';
+    case Bar = 'bar';
 
     /**
      * Total construction work (in work units) required to finish this Building.
@@ -21,6 +23,7 @@ enum BuildingType: string
             self::Farm => 30,
             self::LumberCamp => 20,
             self::Quarry => 40,
+            self::Bar => 15,
         };
     }
 
@@ -34,12 +37,13 @@ enum BuildingType: string
             self::Farm => 3,
             self::LumberCamp => 2,
             self::Quarry => 4,
+            self::Bar => 2,
         };
     }
 
     /**
      * The Resource this Building yields when worked, or null if it is not a
-     * production Building (e.g. service or military Buildings, added later).
+     * production Building (e.g. service or military Buildings).
      */
     public function producesResource(): ?ResourceType
     {
@@ -47,6 +51,7 @@ enum BuildingType: string
             self::Farm => ResourceType::Food,
             self::LumberCamp => ResourceType::Wood,
             self::Quarry => ResourceType::Stone,
+            self::Bar => null,
         };
     }
 
@@ -59,6 +64,7 @@ enum BuildingType: string
             self::Farm => 5,
             self::LumberCamp => 8,
             self::Quarry => 6,
+            self::Bar => 0,
         };
     }
 
@@ -79,7 +85,7 @@ enum BuildingType: string
     public function prerequisites(): array
     {
         return match ($this) {
-            self::Farm, self::LumberCamp => [],
+            self::Farm, self::LumberCamp, self::Bar => [],
             self::Quarry => [self::LumberCamp],
         };
     }
@@ -90,7 +96,7 @@ enum BuildingType: string
     public function researchCost(): int
     {
         return match ($this) {
-            self::Farm, self::LumberCamp => 0,
+            self::Farm, self::LumberCamp, self::Bar => 0,
             self::Quarry => 100,
         };
     }

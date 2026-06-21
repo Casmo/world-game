@@ -22,6 +22,7 @@ use Illuminate\Support\Carbon;
  * @property string $slug
  * @property bool $is_personal
  * @property int $treasury
+ * @property float $wage_share
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
@@ -162,6 +163,18 @@ class Team extends Model
     }
 
     /**
+     * The wage share, clamped to the system floor/cap (ADR-0006). Defensive: the
+     * setter already clamps, but config bounds may shift over a World's life.
+     */
+    public function clampedWageShare(): float
+    {
+        $floor = (float) config('money.wage_share_floor');
+        $cap = (float) config('money.wage_share_cap');
+
+        return max($floor, min($cap, (float) $this->wage_share));
+    }
+
+    /**
      * The Building types this Team has unlocked via the tech tree (ADR-0003).
      *
      * @return HasMany<TeamUnlockedBuilding, $this>
@@ -207,6 +220,7 @@ class Team extends Model
         return [
             'is_personal' => 'boolean',
             'treasury' => 'integer',
+            'wage_share' => 'float',
         ];
     }
 

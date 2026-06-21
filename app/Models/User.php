@@ -162,4 +162,12 @@ class User extends Authenticatable implements PasskeyUser
     {
         $this->forceFill(['energy' => self::MAX_ENERGY])->save();
     }
+
+    /**
+     * Credit the player's personal Money balance (atomic increment).
+     */
+    public function addBalance(int $amount): void
+    {
+        $this->newQuery()->whereKey($this->getKey())->increment('balance', $amount);
+    }
 }

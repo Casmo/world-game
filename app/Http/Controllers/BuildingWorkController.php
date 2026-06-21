@@ -19,7 +19,7 @@ class BuildingWorkController extends Controller
     {
         $team = $building->tile->team;
         abort_unless($team !== null && $request->user()->belongsToTeam($team), 403);
-        abort_unless($building->isBuilt() && $building->isProduction(), 422, 'This building cannot be worked.');
+        abort_unless($building->isBuilt(), 422, 'This building cannot be worked yet.');
 
         try {
             $start->handle($request->user(), $building);

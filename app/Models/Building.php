@@ -7,6 +7,9 @@ use App\Enums\ActivityType;
 use App\Enums\BuildingState;
 use App\Enums\BuildingType;
 use App\Events\BuildingConstructed;
+use App\Events\TreasuryChanged;
+use App\Events\WagePaid;
+use App\Support\MarketCatalogue;
 use Database\Factories\BuildingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -110,18 +113,51 @@ class Building extends Model
 
     /**
      * Apply one completed Work shift: the produced Resources accrue to the
-     * owning Team and the worker earns Experience in this trade — one
-     * consistent step (called inside the sweep's locking transaction).
+     * owning Team, the worker earns Experience in this trade, and the worker is
+     * paid a Wage from the treasury — one consistent step (called inside the
+     * sweep's locking transaction).
      */
     public function produceFor(User $worker): void
     {
-        $resource = $this->type->producesResource();
-        if ($resource === null) {
+        $team = $this->tile->team;
+        if ($team === null) {
             return;
         }
 
-        $this->tile->team?->addResource($resource, $this->type->outputPerShift());
+        $resource = $this->type->producesResource();
+
+        if ($resource !== null) {
+            $team->addResource($resource, $this->type->outputPerShift());
+            $producedValue = $this->type->outputPerShift() * (new MarketCatalogue)->floor($resource);
+            $wage = (int) floor($team->clampedWageShare() * $producedValue);
+        } else {
+            // Service Buildings produce no sellable goods; they pay a flat floor wage.
+            $wage = (int) config('money.floor_wage');
+        }
+
         $worker->addExperience($this->type, $this->type->experiencePerShift());
+
+        $this->payWage($team, $worker, $wage);
+    }
+
+    /**
+     * Transfer a Wage from the treasury to the worker, never paying more than
+     * the treasury holds — so Wages can never bankrupt the Team (ADR-0006) and
+     * the atomic debit keeps the treasury non-negative (ADR-0010).
+     */
+    private function payWage(Team $team, User $worker, int $wage): void
+    {
+        $treasury = (int) $team->newQuery()->whereKey($team->getKey())->value('treasury');
+        $payable = min($wage, $treasury);
+
+        if ($payable <= 0 || ! $team->withdrawTreasury($payable)) {
+            return;
+        }
+
+        $worker->addBalance($payable);
+
+        WagePaid::dispatch($worker->refresh(), $payable);
+        TreasuryChanged::dispatch($team->refresh());
     }
 
     /**

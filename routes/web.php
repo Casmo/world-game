@@ -7,6 +7,7 @@ use App\Http\Controllers\CityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MarketController;
 use App\Http\Controllers\Teams\TeamInvitationController;
+use App\Http\Controllers\TeamWageController;
 use App\Http\Controllers\TechTreeController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\WorldMapController;
@@ -29,6 +30,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('market', [MarketController::class, 'index'])->name('market');
     Route::post('market/sell', [MarketController::class, 'sell'])->name('market.sell');
     Route::post('market/buy', [MarketController::class, 'buy'])->name('market.buy');
+
+    Route::post('team/wage-share', TeamWageController::class)->name('team.wage-share');
 
     Route::get('tiles/{tile}/city', CityController::class)->name('city.show');
     Route::post('buildings', [BuildingController::class, 'store'])->name('buildings.store');

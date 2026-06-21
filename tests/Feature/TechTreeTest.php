@@ -54,7 +54,7 @@ test('the tech tree view exposes each Building’s prerequisites, cost, and stat
         ->get('/tech-tree')
         ->assertInertia(fn (Assert $page) => $page
             ->component('tech-tree')
-            ->has('buildings', 3)
+            ->has('buildings', 4)
             ->where('buildings.2.type', 'quarry')
             ->where('buildings.2.prerequisites', ['lumber_camp'])
             ->where('buildings.2.cost', BuildingType::Quarry->researchCost())

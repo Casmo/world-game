@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TeamRole;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,6 +24,9 @@ class WalletController extends Controller
             'balance' => $user->balance,
             'treasury' => $team->treasury,
             'team' => ['name' => $team->name],
+            'wageShare' => $team->wage_share,
+            // The wage share is a Mayor-only governance lever (ADR-0006).
+            'canSetWageShare' => $user->teamRole($team) === TeamRole::Owner,
         ]);
     }
 }

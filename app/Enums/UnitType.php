@@ -61,6 +61,19 @@ enum UnitType: string
         };
     }
 
+    /**
+     * The Unit type this one is strongly effective against (a rock-paper-scissors
+     * triangle): Armor beats Infantry, Air beats Armor, Infantry beats Air.
+     */
+    public function counters(): self
+    {
+        return match ($this) {
+            self::Armor => self::Infantry,
+            self::Air => self::Armor,
+            self::Infantry => self::Air,
+        };
+    }
+
     public function label(): string
     {
         return ucfirst($this->value);

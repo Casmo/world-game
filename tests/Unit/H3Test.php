@@ -51,6 +51,15 @@ test('isValidCell distinguishes a valid cell from garbage', function () {
         ->and($h3->isValidCell('1234'))->toBeFalse();
 });
 
+test('gridDistance counts the rings between two cells', function () {
+    $h3 = new H3;
+
+    $neighbors = $h3->neighbors('8928308280fffff');
+
+    expect($h3->gridDistance('8928308280fffff', '8928308280fffff'))->toBe(0)
+        ->and($h3->gridDistance('8928308280fffff', $neighbors[0]))->toBe(1);
+});
+
 test('latLngToCell holds at another resolution (guards against H3 version drift)', function () {
     $h3 = new H3;
 

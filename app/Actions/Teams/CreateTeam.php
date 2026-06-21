@@ -23,6 +23,9 @@ class CreateTeam
                 'is_personal' => $isPersonal,
             ]);
 
+            // Seed capital: a new Team starts with a founding treasury (ADR-0006).
+            $team->forceFill(['treasury' => config('money.seed_capital')])->save();
+
             $team->memberships()->create([
                 'user_id' => $user->id,
                 'role' => TeamRole::Owner,

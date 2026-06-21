@@ -27,6 +27,9 @@ class Building extends Model
     /** Energy a player spends to perform one Construct shift. */
     public const CONSTRUCT_ENERGY_COST = 10;
 
+    /** Energy a player spends to perform one production Work shift. */
+    public const WORK_ENERGY_COST = 10;
+
     protected $guarded = [];
 
     protected function casts(): array
@@ -71,6 +74,54 @@ class Building extends Model
     public function hasFreeWorkSlot(): bool
     {
         return $this->activeBuilderCount() < $this->type->workSlots();
+    }
+
+    /**
+     * The currently active Work activities producing at this Building.
+     *
+     * @return MorphMany<Activity, $this>
+     */
+    public function productionActivities(): MorphMany
+    {
+        return $this->morphMany(Activity::class, 'target')
+            ->where('type', ActivityType::Work)
+            ->where('status', ActivityStatus::Active);
+    }
+
+    public function activeWorkerCount(): int
+    {
+        return $this->productionActivities()->count();
+    }
+
+    public function hasFreeProductionSlot(): bool
+    {
+        return $this->activeWorkerCount() < $this->type->workSlots();
+    }
+
+    public function isBuilt(): bool
+    {
+        return $this->state === BuildingState::Built;
+    }
+
+    public function isProduction(): bool
+    {
+        return $this->type->producesResource() !== null;
+    }
+
+    /**
+     * Apply one completed Work shift: the produced Resources accrue to the
+     * owning Team and the worker earns Experience in this trade — one
+     * consistent step (called inside the sweep's locking transaction).
+     */
+    public function produceFor(User $worker): void
+    {
+        $resource = $this->type->producesResource();
+        if ($resource === null) {
+            return;
+        }
+
+        $this->tile->team?->addResource($resource, $this->type->outputPerShift());
+        $worker->addExperience($this->type, $this->type->experiencePerShift());
     }
 
     /**

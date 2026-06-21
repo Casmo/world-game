@@ -6,6 +6,7 @@ enum ActivityType: string
 {
     case Sleep = 'sleep';
     case Construct = 'construct';
+    case Work = 'work';
 
     /**
      * How long this activity takes to complete, in seconds. For Construct this
@@ -17,6 +18,7 @@ enum ActivityType: string
         return match ($this) {
             self::Sleep => 8 * 3600,
             self::Construct => 3600,
+            self::Work => 3600,
         };
     }
 

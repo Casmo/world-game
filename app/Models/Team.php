@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\GeneratesUniqueTeamSlugs;
+use App\Enums\ResourceType;
 use App\Enums\TeamRole;
 use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -94,6 +95,34 @@ class Team extends Model
     public function tiles(): HasMany
     {
         return $this->hasMany(Tile::class);
+    }
+
+    /**
+     * The Team's Resource totals (ADR-0002 — Resources accrue to the Team).
+     *
+     * @return HasMany<TeamResource, $this>
+     */
+    public function resources(): HasMany
+    {
+        return $this->hasMany(TeamResource::class);
+    }
+
+    /**
+     * Add to a Resource total, creating the running total if absent. The
+     * increment itself is a single atomic statement (ADR-0010).
+     */
+    public function addResource(ResourceType $type, int $amount): void
+    {
+        $this->resources()->firstOrCreate(['type' => $type]);
+        $this->resources()->where('type', $type)->increment('amount', $amount);
+    }
+
+    /**
+     * The Team's current total of a Resource type.
+     */
+    public function resourceTotal(ResourceType $type): int
+    {
+        return (int) $this->resources()->where('type', $type)->value('amount');
     }
 
     /**

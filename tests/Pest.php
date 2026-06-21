@@ -1,5 +1,10 @@
 <?php
 
+use App\Actions\Teams\CreateTeam;
+use App\Enums\TeamRole;
+use App\Models\Team;
+use App\Models\Tile;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -44,7 +49,23 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Found a Team (which claims a starting Tile) and return [owner, team, tile].
+ *
+ * @return array{0: User, 1: Team, 2: Tile}
+ */
+function foundedTeam(): array
 {
-    // ..
+    $owner = User::factory()->create();
+    $team = app(CreateTeam::class)->handle($owner, 'Acme');
+
+    return [$owner, $team, $team->tiles()->first()];
+}
+
+function teamMember(Team $team, int $energy = 100): User
+{
+    $user = User::factory()->create(['energy' => $energy]);
+    $team->memberships()->create(['user_id' => $user->id, 'role' => TeamRole::Member]);
+
+    return $user;
 }

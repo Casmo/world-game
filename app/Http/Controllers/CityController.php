@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Building;
+use App\Models\PlayerExperience;
+use App\Models\TeamResource;
 use App\Models\Tile;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -37,6 +39,13 @@ class CityController extends Controller
             'tile' => ['h3_index' => $tile->h3_index, 'biome' => $tile->biome],
             'grid' => Building::PLOT_GRID,
             'buildings' => $buildings,
+            // Team Resource totals and the viewer's own per-trade Experience (AC4 / Fog of war).
+            'resources' => $team->resources->mapWithKeys(
+                fn (TeamResource $resource) => [$resource->type->value => $resource->amount]
+            ),
+            'experience' => $request->user()->experiences->mapWithKeys(
+                fn (PlayerExperience $experience) => [$experience->building_type->value => $experience->points]
+            ),
         ]);
     }
 }

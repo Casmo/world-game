@@ -4,6 +4,7 @@ namespace App\Actions\Buildings;
 
 use App\Enums\BuildingState;
 use App\Enums\BuildingType;
+use App\Exceptions\BuildingLockedException;
 use App\Models\Building;
 use App\Models\Tile;
 
@@ -17,8 +18,16 @@ use App\Models\Tile;
  */
 class PlaceBuilding
 {
+    /**
+     * @throws BuildingLockedException
+     */
     public function handle(Tile $tile, BuildingType $type, int $plotX, int $plotY): Building
     {
+        // Placement is gated by the owning Team's unlocked tech-tree set (ADR-0003).
+        if ($tile->team === null || ! $tile->team->hasUnlocked($type)) {
+            throw new BuildingLockedException;
+        }
+
         return Building::create([
             'tile_id' => $tile->h3_index,
             'plot_x' => $plotX,

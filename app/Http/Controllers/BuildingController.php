@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\Buildings\PlaceBuilding;
 use App\Enums\BuildingType;
 use App\Enums\TeamRole;
+use App\Exceptions\BuildingLockedException;
 use App\Models\Building;
 use App\Models\Tile;
 use Illuminate\Http\RedirectResponse;
@@ -42,7 +43,11 @@ class BuildingController extends Controller
             'That plot is already occupied.',
         );
 
-        $place->handle($tile, BuildingType::from($data['type']), $data['plot_x'], $data['plot_y']);
+        try {
+            $place->handle($tile, BuildingType::from($data['type']), $data['plot_x'], $data['plot_y']);
+        } catch (BuildingLockedException $e) {
+            abort(422, $e->getMessage());
+        }
 
         return back();
     }

@@ -70,6 +70,31 @@ enum BuildingType: string
         return 10;
     }
 
+    /**
+     * Building types that must be unlocked before this one can be researched
+     * (ADR-0003 — progression is per-Building, not per-era).
+     *
+     * @return array<int, self>
+     */
+    public function prerequisites(): array
+    {
+        return match ($this) {
+            self::Farm, self::LumberCamp => [],
+            self::Quarry => [self::LumberCamp],
+        };
+    }
+
+    /**
+     * The Research cost to unlock this Building type.
+     */
+    public function researchCost(): int
+    {
+        return match ($this) {
+            self::Farm, self::LumberCamp => 0,
+            self::Quarry => 100,
+        };
+    }
+
     public function label(): string
     {
         return ucwords(str_replace('_', ' ', $this->value));

@@ -36,7 +36,7 @@ class TechTree
      * The whole tree as view data for a Team: every Building type with its
      * prerequisites, research cost, and current status.
      *
-     * @return array<int, array{type: string, label: string, prerequisites: array<int, string>, cost: int, status: string}>
+     * @return array<int, array{type: string, label: string, prerequisites: array<int, string>, cost: int, status: string, progress: int}>
      */
     public function forTeam(Team $team): array
     {
@@ -46,6 +46,7 @@ class TechTree
             'prerequisites' => array_map(fn (BuildingType $p): string => $p->value, $type->prerequisites()),
             'cost' => $type->researchCost(),
             'status' => $this->statusFor($team, $type)->value,
+            'progress' => $team->researchProgress($type),
         ], BuildingType::cases());
     }
 }

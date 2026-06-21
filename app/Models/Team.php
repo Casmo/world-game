@@ -23,6 +23,7 @@ use Illuminate\Support\Carbon;
  * @property bool $is_personal
  * @property int $treasury
  * @property float $wage_share
+ * @property BuildingType|null $research_target
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
@@ -201,6 +202,51 @@ class Team extends Model
     }
 
     /**
+     * The Team's banked Research progress, one row per target (ADR-0003).
+     *
+     * @return HasMany<TeamResearchProgress, $this>
+     */
+    public function researchProgressRecords(): HasMany
+    {
+        return $this->hasMany(TeamResearchProgress::class);
+    }
+
+    /**
+     * The Building type this Team is currently researching, if any.
+     */
+    public function researchTarget(): ?BuildingType
+    {
+        return $this->research_target;
+    }
+
+    /**
+     * Set (or clear) the current Research target.
+     */
+    public function setResearchTarget(?BuildingType $type): void
+    {
+        $this->forceFill(['research_target' => $type?->value])->save();
+    }
+
+    /**
+     * The Team's banked Research progress toward a Building type.
+     */
+    public function researchProgress(BuildingType $type): int
+    {
+        return (int) $this->researchProgressRecords()->where('building_type', $type)->value('points');
+    }
+
+    /**
+     * Add to a target's banked Research progress, creating the row if absent.
+     * The increment is a single atomic statement, so simultaneous shift
+     * completions all count (ADR-0010).
+     */
+    public function addResearchProgress(BuildingType $type, int $points): void
+    {
+        $this->researchProgressRecords()->firstOrCreate(['building_type' => $type]);
+        $this->researchProgressRecords()->where('building_type', $type)->increment('points', $points);
+    }
+
+    /**
      * Get all invitations for this team.
      *
      * @return HasMany<TeamInvitation, $this>
@@ -221,6 +267,7 @@ class Team extends Model
             'is_personal' => 'boolean',
             'treasury' => 'integer',
             'wage_share' => 'float',
+            'research_target' => BuildingType::class,
         ];
     }
 

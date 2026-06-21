@@ -7,6 +7,8 @@ use App\Enums\ActivityType;
 use App\Enums\BuildingState;
 use App\Enums\BuildingType;
 use App\Events\BuildingConstructed;
+use App\Events\ResearchProgressed;
+use App\Events\ResearchUnlocked;
 use App\Events\TreasuryChanged;
 use App\Events\WagePaid;
 use App\Support\MarketCatalogue;
@@ -29,6 +31,9 @@ class Building extends Model
 
     /** Energy a player spends to perform one Construct shift. */
     public const CONSTRUCT_ENERGY_COST = 10;
+
+    /** Research progress contributed by one completed research Work shift. */
+    public const RESEARCH_PER_SHIFT = 10;
 
     /** Energy a player spends to perform one production Work shift. */
     public const WORK_ENERGY_COST = 10;
@@ -133,11 +138,39 @@ class Building extends Model
         } else {
             // Service Buildings produce no sellable goods; they pay a flat floor wage.
             $wage = (int) config('money.floor_wage');
+
+            if ($this->type->isResearch()) {
+                $this->accrueResearch($team);
+            }
         }
 
         $worker->addExperience($this->type, $this->type->experiencePerShift());
 
         $this->payWage($team, $worker, $wage);
+    }
+
+    /**
+     * Add one shift of Research progress toward the Team's current target and
+     * unlock the Building type once its cost is met — all inside the sweep's
+     * completion transaction (ADR-0003). Progress is banked per target.
+     */
+    private function accrueResearch(Team $team): void
+    {
+        $target = $team->researchTarget();
+        if ($target === null) {
+            return;
+        }
+
+        $team->addResearchProgress($target, self::RESEARCH_PER_SHIFT);
+
+        ResearchProgressed::dispatch($team, $target, $team->researchProgress($target));
+
+        if (! $team->hasUnlocked($target) && $team->researchProgress($target) >= $target->researchCost()) {
+            $team->unlockBuilding($target);
+            $team->setResearchTarget(null);
+
+            ResearchUnlocked::dispatch($team, $target);
+        }
     }
 
     /**

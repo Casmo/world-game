@@ -18,6 +18,7 @@ return [
     'default_unlocked' => [
         BuildingType::Farm->value,
         BuildingType::LumberCamp->value,
+        BuildingType::ResearchLab->value,
     ],
 
 ];

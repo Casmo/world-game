@@ -4,8 +4,8 @@ namespace App\Enums;
 
 /**
  * The starter catalogue of placeable Buildings. Most are *production* Buildings
- * (they yield a Resource when worked); a *service* Building like the Bar yields
- * no sellable goods and exists to serve the community (ADR-0006).
+ * (they yield a Resource when worked); *service* Buildings like the Bar or the
+ * Research Lab yield no sellable goods and exist to serve the Team (ADR-0006).
  */
 enum BuildingType: string
 {
@@ -13,6 +13,7 @@ enum BuildingType: string
     case LumberCamp = 'lumber_camp';
     case Quarry = 'quarry';
     case Bar = 'bar';
+    case ResearchLab = 'research_lab';
 
     /**
      * Total construction work (in work units) required to finish this Building.
@@ -24,6 +25,7 @@ enum BuildingType: string
             self::LumberCamp => 20,
             self::Quarry => 40,
             self::Bar => 15,
+            self::ResearchLab => 20,
         };
     }
 
@@ -38,6 +40,7 @@ enum BuildingType: string
             self::LumberCamp => 2,
             self::Quarry => 4,
             self::Bar => 2,
+            self::ResearchLab => 3,
         };
     }
 
@@ -51,7 +54,7 @@ enum BuildingType: string
             self::Farm => ResourceType::Food,
             self::LumberCamp => ResourceType::Wood,
             self::Quarry => ResourceType::Stone,
-            self::Bar => null,
+            self::Bar, self::ResearchLab => null,
         };
     }
 
@@ -64,7 +67,7 @@ enum BuildingType: string
             self::Farm => 5,
             self::LumberCamp => 8,
             self::Quarry => 6,
-            self::Bar => 0,
+            self::Bar, self::ResearchLab => 0,
         };
     }
 
@@ -77,6 +80,14 @@ enum BuildingType: string
     }
 
     /**
+     * Whether working this Building generates Research progress (ADR-0003).
+     */
+    public function isResearch(): bool
+    {
+        return $this === self::ResearchLab;
+    }
+
+    /**
      * Building types that must be unlocked before this one can be researched
      * (ADR-0003 — progression is per-Building, not per-era).
      *
@@ -85,7 +96,7 @@ enum BuildingType: string
     public function prerequisites(): array
     {
         return match ($this) {
-            self::Farm, self::LumberCamp, self::Bar => [],
+            self::Farm, self::LumberCamp, self::Bar, self::ResearchLab => [],
             self::Quarry => [self::LumberCamp],
         };
     }
@@ -96,7 +107,7 @@ enum BuildingType: string
     public function researchCost(): int
     {
         return match ($this) {
-            self::Farm, self::LumberCamp, self::Bar => 0,
+            self::Farm, self::LumberCamp, self::Bar, self::ResearchLab => 0,
             self::Quarry => 100,
         };
     }

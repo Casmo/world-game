@@ -6,6 +6,7 @@ use App\Concerns\GeneratesUniqueTeamSlugs;
 use App\Enums\BuildingType;
 use App\Enums\ResourceType;
 use App\Enums\TeamRole;
+use App\Enums\UnitStatus;
 use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
@@ -247,6 +248,40 @@ class Team extends Model
     }
 
     /**
+     * The Team's military Units (ADR-0005).
+     *
+     * @return HasMany<Unit, $this>
+     */
+    public function units(): HasMany
+    {
+        return $this->hasMany(Unit::class);
+    }
+
+    /**
+     * Total maintenance owed per cycle for this Team's standing (non-training)
+     * Units.
+     */
+    public function maintenanceCostPerCycle(): int
+    {
+        return $this->units()
+            ->where('status', '!=', UnitStatus::Training)
+            ->get()
+            ->sum(fn (Unit $unit): int => $unit->type->maintenancePerCycle());
+    }
+
+    /**
+     * Start the maintenance clock once the Team first has Units (idempotent).
+     */
+    public function startMaintenanceClock(): void
+    {
+        if ($this->maintenance_due_at === null) {
+            $this->forceFill([
+                'maintenance_due_at' => now()->addSeconds((int) config('war.maintenance_cycle_seconds')),
+            ])->save();
+        }
+    }
+
+    /**
      * Get all invitations for this team.
      *
      * @return HasMany<TeamInvitation, $this>
@@ -268,6 +303,7 @@ class Team extends Model
             'treasury' => 'integer',
             'wage_share' => 'float',
             'research_target' => BuildingType::class,
+            'maintenance_due_at' => 'datetime',
         ];
     }
 

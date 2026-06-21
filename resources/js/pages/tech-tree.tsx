@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 
 type TechStatus = 'unlocked' | 'available' | 'locked';
 
@@ -8,10 +8,13 @@ type TechNode = {
     prerequisites: string[];
     cost: number;
     status: TechStatus;
+    progress: number;
 };
 
 type Props = {
     buildings: TechNode[];
+    researchTarget: string | null;
+    canSetTarget: boolean;
 };
 
 const statusStyles: Record<TechStatus, string> = {
@@ -20,7 +23,11 @@ const statusStyles: Record<TechStatus, string> = {
     locked: 'border-sidebar-border/70 opacity-60 dark:border-sidebar-border',
 };
 
-export default function TechTree({ buildings }: Props) {
+export default function TechTree({
+    buildings,
+    researchTarget,
+    canSetTarget,
+}: Props) {
     return (
         <>
             <Head title="Tech Tree" />
@@ -30,6 +37,9 @@ export default function TechTree({ buildings }: Props) {
                     <h1 className="text-xl font-semibold">Tech Tree</h1>
                     <p className="text-sm text-neutral-500">
                         Research unlocks one Building at a time.
+                        {researchTarget
+                            ? ` Currently researching: ${researchTarget.replace('_', ' ')}.`
+                            : ' No active research target.'}
                     </p>
                 </header>
 
@@ -50,7 +60,7 @@ export default function TechTree({ buildings }: Props) {
                             <p className="mt-1 text-sm text-neutral-500">
                                 {node.status === 'unlocked'
                                     ? 'Unlocked'
-                                    : `Research cost: ${node.cost}`}
+                                    : `Research: ${node.progress}/${node.cost}`}
                             </p>
                             {node.prerequisites.length > 0 && (
                                 <p className="mt-1 text-xs text-neutral-500">
@@ -60,6 +70,21 @@ export default function TechTree({ buildings }: Props) {
                                         .join(', ')}
                                 </p>
                             )}
+                            {canSetTarget &&
+                                node.status === 'available' &&
+                                node.type !== researchTarget && (
+                                    <button
+                                        type="button"
+                                        className="mt-2 rounded bg-neutral-900 px-2 py-1 text-xs text-white dark:bg-white dark:text-neutral-900"
+                                        onClick={() =>
+                                            router.post('/research/target', {
+                                                target: node.type,
+                                            })
+                                        }
+                                    >
+                                        Research this
+                                    </button>
+                                )}
                         </div>
                     ))}
                 </div>

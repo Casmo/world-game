@@ -10,6 +10,7 @@ use App\Http\Controllers\ResearchTargetController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\TeamWageController;
 use App\Http\Controllers\TechTreeController;
+use App\Http\Controllers\UnitController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\WorldMapController;
 use App\Http\Middleware\EnsureTeamMembership;
@@ -34,6 +35,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('team/wage-share', TeamWageController::class)->name('team.wage-share');
     Route::post('research/target', ResearchTargetController::class)->name('research.target');
+
+    Route::get('units', [UnitController::class, 'index'])->name('units');
+    Route::post('units', [UnitController::class, 'store'])->name('units.store');
+    Route::delete('units', [UnitController::class, 'destroy'])->name('units.destroy');
 
     Route::get('tiles/{tile}/city', CityController::class)->name('city.show');
     Route::post('buildings', [BuildingController::class, 'store'])->name('buildings.store');

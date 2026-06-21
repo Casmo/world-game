@@ -14,6 +14,7 @@ enum BuildingType: string
     case Quarry = 'quarry';
     case Bar = 'bar';
     case ResearchLab = 'research_lab';
+    case Barracks = 'barracks';
 
     /**
      * Total construction work (in work units) required to finish this Building.
@@ -26,6 +27,7 @@ enum BuildingType: string
             self::Quarry => 40,
             self::Bar => 15,
             self::ResearchLab => 20,
+            self::Barracks => 35,
         };
     }
 
@@ -41,6 +43,7 @@ enum BuildingType: string
             self::Quarry => 4,
             self::Bar => 2,
             self::ResearchLab => 3,
+            self::Barracks => 2,
         };
     }
 
@@ -54,7 +57,7 @@ enum BuildingType: string
             self::Farm => ResourceType::Food,
             self::LumberCamp => ResourceType::Wood,
             self::Quarry => ResourceType::Stone,
-            self::Bar, self::ResearchLab => null,
+            self::Bar, self::ResearchLab, self::Barracks => null,
         };
     }
 
@@ -67,7 +70,7 @@ enum BuildingType: string
             self::Farm => 5,
             self::LumberCamp => 8,
             self::Quarry => 6,
-            self::Bar, self::ResearchLab => 0,
+            self::Bar, self::ResearchLab, self::Barracks => 0,
         };
     }
 
@@ -98,6 +101,7 @@ enum BuildingType: string
         return match ($this) {
             self::Farm, self::LumberCamp, self::Bar, self::ResearchLab => [],
             self::Quarry => [self::LumberCamp],
+            self::Barracks => [self::Quarry],
         };
     }
 
@@ -109,6 +113,7 @@ enum BuildingType: string
         return match ($this) {
             self::Farm, self::LumberCamp, self::Bar, self::ResearchLab => 0,
             self::Quarry => 100,
+            self::Barracks => 150,
         };
     }
 

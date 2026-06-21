@@ -2,40 +2,14 @@
 
 use App\Actions\Buildings\PlaceBuilding;
 use App\Actions\Buildings\StartConstruction;
-use App\Actions\Teams\CreateTeam;
 use App\Enums\ActivityType;
 use App\Enums\BuildingState;
 use App\Enums\BuildingType;
-use App\Enums\TeamRole;
 use App\Events\BuildingConstructed;
 use App\Exceptions\InsufficientEnergyException;
 use App\Exceptions\WorkSlotsFullException;
 use App\Models\Building;
-use App\Models\Team;
-use App\Models\Tile;
-use App\Models\User;
 use Illuminate\Support\Facades\Event;
-
-/**
- * Found a Team (which claims a starting Tile) and return [owner, team, tile].
- *
- * @return array{0: User, 1: Team, 2: Tile}
- */
-function foundedTeam(): array
-{
-    $owner = User::factory()->create();
-    $team = app(CreateTeam::class)->handle($owner, 'Acme');
-
-    return [$owner, $team, $team->tiles()->first()];
-}
-
-function teamMember(Team $team, int $energy = 100): User
-{
-    $user = User::factory()->create(['energy' => $energy]);
-    $team->memberships()->create(['user_id' => $user->id, 'role' => TeamRole::Member]);
-
-    return $user;
-}
 
 test('a Mayor/Officer can place a Building on an empty Plot', function () {
     [$owner, $team, $tile] = foundedTeam();

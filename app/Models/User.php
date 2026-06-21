@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Concerns\HasTeams;
 use App\Enums\ActivityStatus;
 use App\Enums\ActivityType;
+use App\Enums\BuildingType;
 use App\Exceptions\PlayerBusyException;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -75,6 +76,34 @@ class User extends Authenticatable implements PasskeyUser
     public function activities(): HasMany
     {
         return $this->hasMany(Activity::class);
+    }
+
+    /**
+     * The player's per-trade Experience totals.
+     *
+     * @return HasMany<PlayerExperience, $this>
+     */
+    public function experiences(): HasMany
+    {
+        return $this->hasMany(PlayerExperience::class);
+    }
+
+    /**
+     * Add Experience in a trade, creating the running total if absent. The
+     * increment itself is a single atomic statement (ADR-0010).
+     */
+    public function addExperience(BuildingType $trade, int $points): void
+    {
+        $this->experiences()->firstOrCreate(['building_type' => $trade]);
+        $this->experiences()->where('building_type', $trade)->increment('points', $points);
+    }
+
+    /**
+     * The player's current Experience total in a trade.
+     */
+    public function experienceIn(BuildingType $trade): int
+    {
+        return (int) $this->experiences()->where('building_type', $trade)->value('points');
     }
 
     /**

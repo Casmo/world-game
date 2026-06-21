@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BuildingConstructionController;
 use App\Http\Controllers\BuildingController;
+use App\Http\Controllers\BuildingWorkController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Teams\TeamInvitationController;
@@ -25,6 +26,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('tiles/{tile}/city', CityController::class)->name('city.show');
     Route::post('buildings', [BuildingController::class, 'store'])->name('buildings.store');
     Route::post('buildings/{building}/construct', BuildingConstructionController::class)->name('buildings.construct');
+    Route::post('buildings/{building}/work', BuildingWorkController::class)->name('buildings.work');
 
     Route::get('invitations/{invitation}/accept', [TeamInvitationController::class, 'accept'])->name('invitations.accept');
     Route::delete('invitations/{invitation}', [TeamInvitationController::class, 'decline'])->name('invitations.decline');
